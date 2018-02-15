@@ -1,0 +1,6 @@
+left hand	        right hand
+little finger	A	little finger	;
+ring finger	S	ring finger	L
+middle finger	D	middle finger	K
+index finger	F	index finger	J
+thumb	spacebar	thumb	spacebar
