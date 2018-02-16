@@ -18,12 +18,13 @@ void BOX();
 void DISPLAY();
 void gotoxy(short int col, short int row);
 int i,len,y;
-char paragraph[]="\n       The 1910 Cuba hurricane was said to be one of\n\n\
+char paragraph_for_display[]="\n       The 1910 Cuba hurricane was said to be one of\n\n\
        the worst tropical cyclones that has ever hit\n\n\
        Cuba. The storm formed in the southern caribbean\n\n\
        sea on October 9, 1910.\n\n";
+char paragraph_for_pointer[]="The 1910 Cuba hurricane was said to be one of the worst tropical cyclones that has ever hit Cuba. The storm formed in the southern caribbean sea on October 9, 1910.";
 char blank=' ';
-char ch,*para;
+char ch;
 int main()
 {
     DISPLAY();
@@ -33,8 +34,9 @@ int main()
 }
 void PARA()
 {
-    printf("%s",paragraph);
-    len=strlen(paragraph);
+    gotoxy(6,5);
+    printf("%s",paragraph_for_display);
+    len=strlen(paragraph_for_pointer);
 
 }
 void gotoxy(short int col,short int row)
@@ -65,32 +67,12 @@ void BOX()
 }
 void DISPLAY()
 {
-    gotoxy(5,5);
     PARA();
     BOX();
-    POINTER();
-
-}
-void POINTER()
-{
-    gotoxy(7,5);
-    printf("%c",HASH);
-    POINTER_MOVER();
-}
-void POINTER_MOVER()
-{
-    ch=getch();
-    if(ch==*para){
-        system("cls");
-        para+=1;
-    }
-}
-void POINTER_POS()
-{
-
 }
 
-void LINE_CHANGER()
-{
 
-}
+
+
+
+
