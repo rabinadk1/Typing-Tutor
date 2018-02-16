@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <conio.h>
 #include <stdio_ext.h>
 #include <time.h>
 #include "tt.h"
@@ -23,6 +24,10 @@ int main()
 			break;
 		case '4':
 			exit(0);
+		default:
+			printf("I'm sorry. I didn't get that.");
+			cls();
+			main();
 	}
 }
 void mainmenu()
@@ -78,11 +83,24 @@ void type()
 	rewind(fr);
 	fgets(para,i+1,fr);
 	printf("\n\n%s",para);
+	do {
+	printf("\n Do you want to take this exrcise?\n");
+	ch=getchar();
+	__fpurge(stdin);//used instead of fflush(stdin)
+	if(tolower(ch)=='n'){
+		cls();
+		main();
+	}
+	else if (tolower(ch)!='y')
+		printf("I'm sorry. I didn't get that.\n");
+	} while (1);
 	usr=calloc(i,sizeof(char));
 	printf("\n\nEnter the paragraph given above:\n\n");
 	s1=time(NULL);
-	scanf("%[^\n]",usr);
-	getchar();
+	for (x=0; x<i;x++)
+	{
+		usr[i]=getche();
+	}
 	s2=time(NULL);
 	for (x=0;x<i;x++)
 	{
@@ -140,7 +158,7 @@ void about()
 
 void continue_()
 {
-	printf("\n\nDo you want to continue?\n");
+	printf("\n\nDo you want to goto Main Menu?\n");
 	char ch=getchar();
 	__fpurge(stdin);//used instead of fflush(stdin)
 	if(tolower(ch)=='y'){

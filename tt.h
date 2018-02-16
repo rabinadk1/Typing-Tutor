@@ -1,4 +1,5 @@
 void type();
+//void selectuser();
 void stat();
 void about();
 void mainmenu();
