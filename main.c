@@ -6,37 +6,86 @@
 #include <stdio_ext.h>
 #include <time.h>
 #include "tt.h"
+char *blank[4];
+char *main_menu_options[]={"User Login","User Statistics","About","Exit"};
 int main()
 {
-	mainmenu();
-	char ch=getchar();
-	__fpurge(stdin);//used instead of fflush(stdin)
-	switch (ch)
+	char ch;
+	blank[0]=ARROW;
+	for (int i=1;i<4;i++)
+		blank[i]="   ";
+	while(1)
 	{
-		case '1':
+		mainmenu();
+		ch=getch();
+		if(ch=='1')
 			type();
-			break;
-		case '2':
+		else if (ch=='2')
 			stat();
-			break;
-		case '3':
+		else if (ch=='3')
 			about();
-			break;
-		case '4':
+		else if (ch=='4')
 			exit(0);
-		default:
-			printf("I'm sorry. I didn't get that.");
-			cls();
-			main();
+		if(!strcmp(blank[0],ARROW)){
+			if (ch==UP){
+				blank[0]=" ";
+				blank[3]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[0]=" ";
+				blank[1]=ARROW;
+			}
+			else if (ch==ENTER)
+				type();
+		}
+		else if(!strcmp(blank[1],ARROW)){
+			if(ch==UP){
+				blank[1]=" ";
+				blank[0]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[1]=" ";
+				blank[2]=ARROW;
+			}
+			else if (ch==ENTER)
+				stat();
+		}
+        else if(!strcmp(blank[2],ARROW)){
+			if (ch==UP) {
+				blank[2]=" ";
+				blank[1]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[2]=" ";
+				blank[3]=ARROW;
+			}
+			else if (ch==ENTER)
+				about();
+		}
+        else if(!strcmp(blank[3],ARROW)){
+			if (ch==UP) {
+				blank[3]=" ";
+				blank[2]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[3]=" ";
+				blank[0]=ARROW;
+			}
+			else if(ch==ENTER)
+				exit(0);
+		}
 	}
 }
+
 void mainmenu()
 {
-	printf("Main Menu:\n\n\n");
-	printf("1. Type\n\n");
-	printf("2. Statistics\n\n");
-	printf("3. About\n\n");
-	printf("4. Exit\n\n");
+	int i;
+    system("clear");
+    LOGO();
+    printf("\n\n\t    PLEASE SELECT AN OPTION USING 'W' OR 'S' KEYS AND PRESSING ENTER ELSE PRESS THE NUMBER BEFORE THE OPTION\n\n");
+    printf("\n\n\t\t\t\t\t\t    ====>MENU<=====\n\n");
+    for(i=0;i<4;i++)
+        printf("\t\t\t\t\t\t    %s %d.%s\n\n",blank[i],i+1,main_menu_options[i]);
 }
 
 /*void selectuser()
@@ -62,6 +111,7 @@ void mainmenu()
 	fclose(fuser);
 	continue_();
 }*/
+
 void type()
 {
 	cls();
@@ -91,16 +141,16 @@ void type()
 		cls();
 		main();
 	}
+	if (tolower(ch)=='y')
+		break;
 	else if (tolower(ch)!='y')
 		printf("I'm sorry. I didn't get that.\n");
 	} while (1);
 	usr=calloc(i,sizeof(char));
 	printf("\n\nEnter the paragraph given above:\n\n");
 	s1=time(NULL);
-	for (x=0; x<i;x++)
-	{
-		usr[i]=getche();
-	}
+	scanf("%[^\n]",usr);
+	getchar();
 	s2=time(NULL);
 	for (x=0;x<i;x++)
 	{
@@ -149,24 +199,25 @@ void stat()
 void about()
 {
 	cls();
-	printf("Typing Tutor 1.0\n\n");
-	printf("Developers: Rabin Adhikari\n");
-	printf("%11c Pujan Dahal\n",' ');
-	printf("%11c Saurab Bhusal\n",' ');
+	printf("A b o u t  T y p i n g  T u t o r\n\n");
+	printf("\tTyping Tutor 1.0\n\n");
+	printf("\tDevelopers: Rabin Adhikari\n");
+	printf("\t%11c Pujan Dahal\n",' ');
+	printf("\t%11c Saurab Bhusal\n",' ');
 	continue_();
 }
 
 void continue_()
 {
-	printf("\n\nDo you want to goto Main Menu?\n");
-	char ch=getchar();
+	sleep(1);
+	printf("\n\nPress Esc to go to Main Menu\n");
+	char ch=getche();
 	__fpurge(stdin);//used instead of fflush(stdin)
-	if(tolower(ch)=='y'){
+	if(ch==27){
 		cls();
 		main();
 	}
-	else if (tolower(ch)=='n')
-		exit(0);
+
 	else
 	{
 		printf("I'm sorry. I didn't get that.\n");
