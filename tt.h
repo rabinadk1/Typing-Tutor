@@ -1,9 +1,13 @@
-void type();
-//void selectuser();
+float *type();
+void selectuser();
 void stat();
 void about();
-void mainmenu();
+void menu();
 void continue_();
+void new_();
+int write_stat(float, float);
+void existing();
+void init_blank();
 
 void cls()
 {
