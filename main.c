@@ -104,7 +104,7 @@ void existing()
 	int n,num,i;
 	char name[25],*nam;
 	fscanf(fuser,"%d ",&n);
-	char **user=calloc(n,sizeof(char*)); //bug in user doesn't sore data
+	char **user=calloc(n,sizeof(char*));
 	printf("The available users are:\n\n");
 	for (i=0;i<n;i++)
 	{
@@ -118,6 +118,7 @@ void existing()
 	while(1){
 		printf("\n\nEnter the number to select the user: ");
 		scanf("%d",&num);
+		getchar();
 		if (num>n) {
 			printf("Please enter the number inside the range.");
 			continue;
@@ -126,57 +127,71 @@ void existing()
 	}
 	FILE *fptr;
 	//To read from previously created user file
-	float wpm, accuracy;
+	float *wpm, *accuracy,wpmavg=0,accuracyavg=0;
 	int lesson_num;
 	strcpy(name,user[num-1]);
 	strcat(name,".txt");
 	fptr=fopen(name,"r");
 	fnull(fptr);
-	fscanf(fptr,"%*d %*s %f %f %d",&accuracy,&wpm,&lesson_num);
+	fscanf(fptr,"%d %*d %*s",&lesson_num);
+	wpm=calloc(lesson_num,sizeof(float));
+	accuracy=calloc(lesson_num,sizeof(float));
+	for (i=0;i<lesson_num;i++)
+		fscanf(fptr," %f %f",accuracy+i,wpm+i);
 	fclose(fptr);
-	if (lesson_num==total_lessons)
+	if (lesson_num==total_lessons){
 		printf("\n\nCongratulations you have completed all the lessons.\n\n");
+		continue_();
+	}
 	//to continue lesson
-	fptr=fopen(lessons[lesson_num],"r");
-	fnull(fptr);
-	float *data=type(fptr);
-	accuracy=(accuracy+data[0])/2;
-	wpm=(wpm+data[1])/2;
+	float *data=type(lesson_num+1);
+	for (i=0;i<lesson_num;i++)
+	{
+		wpmavg+=wpm[i];
+		accuracyavg+=accuracy[i];
+	}
+	lesson_num++;
+	wpmavg+=data[1];
+	accuracyavg+=data[0];
+	wpmavg/=lesson_num;
+	accuracyavg/=lesson_num;
 	//to write on previously created user file
-	fptr=fopen(name,"w");
+	fptr=fopen(name,"r+");
 	fnull(fptr);
-	fprintf(fptr,"%d %s %f %f %d",num,user[num-1],accuracy,wpm,lesson_num+1);
+	fprintf(fptr,"%d",lesson_num);
+	fseek(fptr,0,2);
+	fprintf(fptr," %f %f",data[0],data[1]);
 	fclose(fptr);
 	//to write on stat.txt
 	fptr=fopen("stat.txt","r+");
 	fnull(fptr);
 	fscanf(fptr,"%*d ");
-	for (i=0;i<num;i++)
+	for (i=0;i<num-1;i++)
 		fscanf(fptr,"%*d %s %*f %*f\n",name);
 	fscanf(fptr,"%*d %*s ");
-	fprintf(fptr,"%f %f",accuracy,wpm);
+	fprintf(fptr,"%f %f",accuracyavg,wpmavg);
 	fclose(fptr);
 	printf("Your records have successfully saved.\n");
 	continue_();
 }
 
-float *type(FILE *fr)
+float *type(int less)
 {
 	cls();
+	FILE* fr;
+	fr=fopen(lessons[less],"r");
+	fnull(fr);
 	static float data[2];
-	srand(time(NULL));
 	char *para,*usr,ch;
 	time_t s1,s2;
-	int wcount=1,i=0,error=0,x;
-	while((ch=getc(fr))!=EOF){
+	int wcount=1,i=0,ok=0,x;
+	while((ch=getc(fr))!=EOF)
 		i++;
-	}
-	para=calloc(i,sizeof(char));
+	para=calloc(i+1,sizeof(char));
 	rewind(fr);
 	fgets(para,i+1,fr);
 	fclose(fr); //file closed
 	printf("\n%s",para);
-	getchar();
 	do {
 		printf("\n\nDo you want to take this exercise?\n");
 		ch=getchar();
@@ -190,7 +205,7 @@ float *type(FILE *fr)
 		else
 			printf("I'm sorry. I didn't get that.\n");
 	} while (1);
-	usr=calloc(i,sizeof(char));
+	usr=calloc(i+1,sizeof(char));
 	printf("\n\nEnter the paragraph given above:\n\n");
 	s1=time(NULL);
 	scanf("%[^\n]",usr);
@@ -198,30 +213,38 @@ float *type(FILE *fr)
 	s2=time(NULL);
 	for (x=0;x<i;x++)
 	{
+		if (usr[x]=='\0')
+			break;
 		if(usr[x]==' ')
 			wcount++;
-		if (usr[x]!=para[x])
-			error++;
+		if (usr[x]==para[x])
+			ok++;
 	}
-	float accuracy,wpm;
-	accuracy=(1-(float)error/i)*100;
-	data[0]=accuracy;
-	wpm=wcount*60.0/(s2-s1);
-	data[1]=wpm;
-	printf("\n\nAccuracy: %.2f%%\nWPM: %.2f\n",accuracy,wpm);
+	free(usr);
+	free(para);
+	data[0]=ok*100.0/i;
+	data[1]=wcount*60.0/(s2-s1);
+	printf("\n\nAccuracy: %.2f%%\nWPM: %.2f\n",data[0],data[1]);
 	return data;
 }
 int write_stat(float accuracy,float wpm)
 {
 	FILE *fa;
 	fa=fopen("stat.txt","r+");
-	fnull(fa);
+	//ok
+	if (fa==NULL) {
+		fa=fopen("stat.txt","w");
+		fnull(fa);
+		fprintf(fa,"%d %d %s %f %f\n",1,1,usr_name,accuracy,wpm);
+		fclose(fa);
+		return 1;
+	}
 	int usr_no;
 	fscanf(fa,"%d",&usr_no);
 	fseek(fa,0,2);
 	fprintf(fa,"%d %s %f %f\n",++usr_no,usr_name,accuracy,wpm);
 	rewind(fa);
-	fprintf(fa,"%2d",usr_no);
+	fprintf(fa,"%d",usr_no);
 	fclose(fa); //file closed
 	printf("Your records have successfully saved.\n");
 	return usr_no;
@@ -285,24 +308,22 @@ void selectuser()
 void new_()
 {
 	cls();
-	char name[25];
+	char *name;
 	printf("Enter your name: ");
 	scanf("%s",usr_name);
 	getchar();
-	FILE *fptr;
-
-	//open lesson and provide pointer to lesson to type() functon
-	fptr=fopen(lessons[0],"r");
-	fnull(fptr);
-	float * data=type(fptr);
+	//open lesson
+	float *datum=type(0); //error when float *data used
 	//write user stats to stat.txt and extract user number
-	int usr_no=write_stat(data[0],data[1]);
+	int usr_no=write_stat(datum[0],datum[1]);
 	//open user file and write stat of user
+	name=calloc(strlen(usr_name)+1,sizeof(char));
 	strcpy(name,usr_name);
 	strcat(name,".txt");
+	FILE* fptr;
 	fptr=fopen(name,"w");
 	fnull(fptr);
-	fprintf(fptr,"%d %s %f %f %d",usr_no,usr_name,data[0],data[1]);//data[0]==accuracy, data[1]==wpm, 1=lesson_num
+	fprintf(fptr,"%d %d %s %f %f",1,usr_no,usr_name,datum[0],datum[1]);//data[0]==accuracy, data[1]==wpm, 1=lesson_num
 	fclose(fptr);
 	continue_();
 }
@@ -355,6 +376,7 @@ void continue_()
 		continue_();
 	}
 }
+
 void init_blank()
 {
 	for (int i=0;i<4;i++)

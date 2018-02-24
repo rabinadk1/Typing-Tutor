@@ -1,4 +1,4 @@
-float *type();
+float *type(int);
 void selectuser();
 void stat();
 void about();
@@ -21,9 +21,10 @@ void fnull(FILE *fptr)
 		continue_();
 	}
 }
+
 #define UP 'w'
 #define DOWN 's'
-#define ENTER 'e'
+#define ENTER '\n'
 #define ARROW "-->"
 
 void LOGO()
