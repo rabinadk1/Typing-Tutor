@@ -2,83 +2,210 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <conio.h>
 #include <stdio_ext.h>
 #include <time.h>
 #include "tt.h"
+
+char *blank[4],usr_name[20];
+char *main_menu_options[]={"User Login","User Statistics","About","Exit"};
+char *select_user_options[]={"Existing User","New User", "Back"};
+char *lessons[]={"l0.txt","l1.txt","l2.txt","l3.txt","l4.txt","l5.txt","l6.txt","l7.txt","l8.txt","l9.txt"};
+int total_lessons=10;
+
 int main()
 {
-	mainmenu();
-	char ch=getchar();
-	__fpurge(stdin);//used instead of fflush(stdin)
-	switch (ch)
+	char ch;
+	init_blank();
+	blank[0]=ARROW;
+	while(1)
 	{
-		case '1':
-			type();
-			break;
-		case '2':
-			stat();
-			break;
-		case '3':
-			about();
-			break;
-		case '4':
-			exit(0);
+		menu();
+		for(int i=0;i<4;i++)
+			printf("\t\t\t\t\t\t    %s %d.%s\n\n",blank[i],i+1,main_menu_options[i]);
+		ch=getch();
+		switch (ch)
+		{
+			case '1':
+				selectuser();
+			case '2':
+				stat();
+			case '3':
+				about();
+			case '4':
+				exit(0);
+		}
+		if(!strcmp(blank[0],ARROW)){
+			if (ch==UP){
+				blank[0]=" ";
+				blank[3]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[0]=" ";
+				blank[1]=ARROW;
+			}
+			else if (ch==ENTER)
+				selectuser();
+		}
+		else if(!strcmp(blank[1],ARROW)){
+			if(ch==UP){
+				blank[1]=" ";
+				blank[0]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[1]=" ";
+				blank[2]=ARROW;
+			}
+			else if (ch==ENTER)
+				stat();
+		}
+        else if(!strcmp(blank[2],ARROW)){
+			if (ch==UP) {
+				blank[2]=" ";
+				blank[1]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[2]=" ";
+				blank[3]=ARROW;
+			}
+			else if (ch==ENTER)
+				about();
+		}
+        else if(!strcmp(blank[3],ARROW)){
+			if (ch==UP) {
+				blank[3]=" ";
+				blank[2]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[3]=" ";
+				blank[0]=ARROW;
+			}
+			else if(ch==ENTER)
+				exit(0);
+		}
 	}
 }
-void mainmenu()
+
+void menu()
 {
-	printf("Main Menu:\n\n\n");
-	printf("1. Type\n\n");
-	printf("2. Statistics\n\n");
-	printf("3. About\n\n");
-	printf("4. Exit\n\n");
+	cls();
+    LOGO();
+    printf("\n\n\t    PLEASE SELECT AN OPTION USING 'W' OR 'S' KEYS AND PRESSING ENTER ELSE PRESS THE NUMBER BEFORE THE OPTION\n\n");
+    printf("\n\n\t\t\t\t\t\t    ====>MENU<=====\n\n");
 }
 
-/*void selectuser()
+void existing()
 {
 	cls();
 	FILE * fuser;
+	//to read from stat.txt
 	fuser=fopen("stat.txt","r");
 	fnull(fuser);
-	int n;
-	char name[20],*nam;
+	int n,num,i;
+	char name[25],*nam;
 	fscanf(fuser,"%d ",&n);
-	char *user[n];
+	char **user=calloc(n,sizeof(char*));
 	printf("The available users are:\n\n");
-	for (int i=0;i<n;i++)
+	for (i=0;i<n;i++)
 	{
 		fscanf(fuser,"%*d %s %*f %*f\n",name);
-		printf("%d %s\n",i+1,name);
+		printf("\t%d.%s\n\n",i+1,name);
 		nam=calloc(strlen(name)+1,sizeof(char));
 		strcpy(nam,name);
 		user[i]=nam;
 	}
-	printf("If user is already pre");
 	fclose(fuser);
+	while(1){
+		printf("\n\nEnter the number to select the user: ");
+		scanf("%d",&num);
+		getchar();
+		if (num>n) {
+			printf("Please enter the number inside the range.");
+			continue;
+		}
+		break;
+	}
+	FILE *fptr;
+	//To read from previously created user file
+	float *wpm, *accuracy,wpmavg=0,accuracyavg=0;
+	int lesson_num;
+	strcpy(name,user[num-1]);
+	strcat(name,".txt");
+	fptr=fopen(name,"r");
+	fnull(fptr);
+	fscanf(fptr,"%d %*d %*s",&lesson_num);
+	wpm=calloc(lesson_num,sizeof(float));
+	accuracy=calloc(lesson_num,sizeof(float));
+	for (i=0;i<lesson_num;i++)
+		fscanf(fptr," %f %f",accuracy+i,wpm+i);
+	fclose(fptr);
+	if (lesson_num==total_lessons){
+		printf("\n\nCongratulations you have completed all the lessons.\n\n");
+		continue_();
+	}
+	//to continue lesson
+	float *data=type(lesson_num+1);
+	for (i=0;i<lesson_num;i++)
+	{
+		wpmavg+=wpm[i];
+		accuracyavg+=accuracy[i];
+	}
+	lesson_num++;
+	wpmavg+=data[1];
+	accuracyavg+=data[0];
+	wpmavg/=lesson_num;
+	accuracyavg/=lesson_num;
+	//to write on previously created user file
+	fptr=fopen(name,"r+");
+	fnull(fptr);
+	fprintf(fptr,"%d",lesson_num);
+	fseek(fptr,0,2);
+	fprintf(fptr," %f %f",data[0],data[1]);
+	fclose(fptr);
+	//to write on stat.txt
+	fptr=fopen("stat.txt","r+");
+	fnull(fptr);
+	fscanf(fptr,"%*d ");
+	for (i=0;i<num-1;i++)
+		fscanf(fptr,"%*d %s %*f %*f\n",name);
+	fscanf(fptr,"%*d %*s ");
+	fprintf(fptr,"%f %f",accuracyavg,wpmavg);
+	fclose(fptr);
+	printf("Your records have successfully saved.\n");
 	continue_();
-}*/
-void type()
+}
+
+float *type(int less)
 {
 	cls();
-	char *lesson[]={"l1.txt","l2.txt","l3.txt","l4.txt","l5.txt","l6.txt","l7.txt","l8.txt","l9.txt"};
-	srand(time(NULL));
-	char name[20],*para,*usr,ch;
-	printf("Enter your name: ");
-	scanf("%s",name);
-	getchar();
-	time_t s1,s2;
-	int wcount=1,i=0,error=0,x,usr_no;
-	FILE * fr,* fa; //fr to read and fa to write without erasing
-	fr=fopen(lesson[rand()%9],"r");
+	FILE* fr;
+	fr=fopen(lessons[less],"r");
 	fnull(fr);
-	while((ch=getc(fr))!=EOF){
+	static float data[2];
+	char *para,*usr,ch;
+	time_t s1,s2;
+	int wcount=1,i=0,ok=0,x;
+	while((ch=getc(fr))!=EOF)
 		i++;
-	}
-	para=calloc(i,sizeof(char));
+	para=calloc(i+1,sizeof(char));
 	rewind(fr);
 	fgets(para,i+1,fr);
-	printf("\n\n%s",para);
-	usr=calloc(i,sizeof(char));
+	fclose(fr); //file closed
+	printf("\n%s",para);
+	do {
+		printf("\n\nDo you want to take this exercise?\n");
+		ch=getchar();
+		__fpurge(stdin);//used instead of fflush(stdin)
+		if(tolower(ch)=='n'){
+			cls();
+			main();
+		}
+		if (tolower(ch)=='y')
+			break;
+		else
+			printf("I'm sorry. I didn't get that.\n");
+	} while (1);
+	usr=calloc(i+1,sizeof(char));
 	printf("\n\nEnter the paragraph given above:\n\n");
 	s1=time(NULL);
 	scanf("%[^\n]",usr);
@@ -86,25 +213,118 @@ void type()
 	s2=time(NULL);
 	for (x=0;x<i;x++)
 	{
+		if (usr[x]=='\0')
+			break;
 		if(usr[x]==' ')
 			wcount++;
-		if (usr[x]!=para[x])
-			error++;
+		if (usr[x]==para[x])
+			ok++;
 	}
-	float wpm, accuracy;
-	wpm=wcount*60.0/(s2-s1);
-	accuracy=(1-(float)error/i)*100;
-	printf("\n\nAccuracy: %.2f%%\nWPM: %.2f\n",accuracy,wpm);
+	free(usr);
+	free(para);
+	data[0]=ok*100.0/i;
+	data[1]=wcount*60.0/(s2-s1);
+	printf("\n\nAccuracy: %.2f%%\nWPM: %.2f\n",data[0],data[1]);
+	return data;
+}
+int write_stat(float accuracy,float wpm)
+{
+	FILE *fa;
 	fa=fopen("stat.txt","r+");
-	fnull(fr);
+	//ok
+	if (fa==NULL) {
+		fa=fopen("stat.txt","w");
+		fnull(fa);
+		fprintf(fa,"%d %d %s %f %f\n",1,1,usr_name,accuracy,wpm);
+		fclose(fa);
+		return 1;
+	}
+	int usr_no;
 	fscanf(fa,"%d",&usr_no);
 	fseek(fa,0,2);
-	fprintf(fa,"%d %s %f %f\n",++usr_no,name,accuracy,wpm);
+	fprintf(fa,"%d %s %f %f\n",++usr_no,usr_name,accuracy,wpm);
 	rewind(fa);
 	fprintf(fa,"%d",usr_no);
-	fclose(fa);
-	fclose(fr);
+	fclose(fa); //file closed
 	printf("Your records have successfully saved.\n");
+	return usr_no;
+}
+void selectuser()
+{
+	char ch;
+	init_blank();
+	blank[0]=ARROW;
+	while(1)
+	{
+		menu();
+		for(int i=0;i<3;i++)
+			printf("\t\t\t\t\t\t    %s %d.%s\n\n",blank[i],i+1,select_user_options[i]);
+		ch=getch();
+		if(ch=='1')
+			existing();
+		else if (ch=='2')
+			new_();
+		else if (ch=='3')
+			main();
+		if(!strcmp(blank[0],ARROW)){
+			if (ch==UP){
+				blank[0]=" ";
+				blank[2]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[0]=" ";
+				blank[1]=ARROW;
+			}
+			else if (ch==ENTER)
+				existing();
+		}
+		else if(!strcmp(blank[1],ARROW)){
+			if(ch==UP){
+				blank[1]=" ";
+				blank[0]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[1]=" ";
+				blank[2]=ARROW;
+			}
+			else if (ch==ENTER)
+				new_();
+		}
+        else if(!strcmp(blank[2],ARROW)){
+			if (ch==UP) {
+				blank[2]=" ";
+				blank[1]=ARROW;
+			}
+			else if(ch==DOWN){
+				blank[2]=" ";
+				blank[0]=ARROW;
+			}
+			else if (ch==ENTER)
+				main();
+		}
+	}
+}
+
+void new_()
+{
+	cls();
+	char *name;
+	printf("Enter your name: ");
+	scanf("%s",usr_name);
+	getchar();
+	//open lesson
+	float *datum=type(0); //error when float *data used
+	//write user stats to stat.txt and extract user number
+	int usr_no=write_stat(datum[0],datum[1]);
+	//open user file and write stat of user
+	name=calloc(strlen(usr_name)+1,sizeof(char));
+	strcpy(name,usr_name);
+	strcat(name,".txt");
+	FILE* fptr;
+	fptr=fopen(name,"w");
+	fnull(fptr);
+	fprintf(fptr,"%d %d %s %f %f",1,usr_no,usr_name,datum[0],datum[1]);//data[0]==accuracy, data[1]==wpm, 1=lesson_num
+	fclose(fptr);
 	continue_();
 }
 
@@ -131,27 +351,34 @@ void stat()
 void about()
 {
 	cls();
-	printf("Typing Tutor 1.0\n\n");
-	printf("Developers: Rabin Adhikari\n");
-	printf("%11c Pujan Dahal\n",' ');
-	printf("%11c Saurab Bhusal\n",' ');
+	printf("A b o u t  T y p i n g  T u t o r\n\n");
+	printf("\tTyping Tutor 1.0\n\n");
+	printf("\tDevelopers: Rabin Adhikari\n");
+	printf("\t%11c Pujan Dahal\n",' ');
+	printf("\t%11c Saurab Bhusal\n",' ');
 	continue_();
 }
 
 void continue_()
 {
-	printf("\n\nDo you want to continue?\n");
-	char ch=getchar();
+	sleep(1);
+	printf("\n\nPress Esc to go to Main Menu\n");
+	char ch=getche();
 	__fpurge(stdin);//used instead of fflush(stdin)
-	if(tolower(ch)=='y'){
+	if(ch==27){
 		cls();
 		main();
 	}
-	else if (tolower(ch)=='n')
-		exit(0);
+
 	else
 	{
 		printf("I'm sorry. I didn't get that.\n");
 		continue_();
 	}
+}
+
+void init_blank()
+{
+	for (int i=0;i<4;i++)
+		blank[i]=" ";
 }
