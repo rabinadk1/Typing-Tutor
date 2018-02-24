@@ -11,7 +11,7 @@ void init_blank();
 
 void cls()
 {
-	system("clear");
+	system("cls");
 }
 
 void fnull(FILE *fptr)

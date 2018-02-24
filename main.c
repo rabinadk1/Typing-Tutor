@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <conio.h>
-#include <stdio_ext.h>
 #include <time.h>
 #include "tt.h"
 
@@ -195,7 +194,7 @@ float *type(int less)
 	do {
 		printf("\n\nDo you want to take this exercise?\n");
 		ch=getchar();
-		__fpurge(stdin);//used instead of fflush(stdin)
+		fflush(stdin);
 		if(tolower(ch)=='n'){
 			cls();
 			main();
@@ -364,7 +363,7 @@ void continue_()
 	sleep(1);
 	printf("\n\nPress Esc to go to Main Menu\n");
 	char ch=getche();
-	__fpurge(stdin);//used instead of fflush(stdin)
+	fflush(stdin);
 	if(ch==27){
 		cls();
 		main();
